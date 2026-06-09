@@ -1,0 +1,57 @@
+# Gallera Amezcua - Sistema de Gestión
+
+Este proyecto es una aplicación full-stack diseñada para la gestión de inventarios de una gallera, permitiendo la visualización de catálogo (modo cliente) y la administración de ejemplares (modo administrador).
+
+## Estructura del Proyecto
+- `/frontend`: Aplicación web desarrollada con **Angular 19**.
+- `/backend`: API REST desarrollada con **FastAPI**.
+
+## 1. Despliegue del Backend (FastAPI)
+
+El backend gestiona la conexión con la base de datos MySQL.
+
+### Requisitos:
+- Python 3.9+ instalado.
+- MySQL Server corriendo.
+
+### Pasos para iniciar:
+1. Navega a la carpeta del backend:
+   ```bash
+   cd backend
+
+
+Instala las dependencias (se recomienda usar un entorno virtual):
+
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+Ejecuta el servidor:
+
+uvicorn main:app --reload
+
+2. Despliegue del Frontend (Angular)
+Requisitos:
+Node.js instalado (v18 o superior).
+
+Angular CLI instalado (npm install -g @angular/cli).
+
+Pasos para iniciar:
+Navega a la carpeta del frontend:
+
+
+cd frontend
+Instala las dependencias:
+
+
+npm install
+Ejecuta el servidor de desarrollo:
+
+
+ng serve -o
+La aplicación abrirá automáticamente en http://localhost:4200.
+
+Funcionamiento
+Modo Cliente: Visualización del catálogo y carrito de compras.
+
+Modo Admin: Permite agregar aves, gestionar líneas (categorías) y criaderos (proveedores) directamente desde el modal de administración.

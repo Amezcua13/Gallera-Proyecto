@@ -1,0 +1,238 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-success" href="#">🐓 GALLERA AMEZCUA</a>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm px-3" 
+              [ngClass]="vistaActual === 'cliente' ? 'btn-success fw-bold' : 'btn-outline-light'"
+              (click)="vistaActual = 'cliente'">
+        🛒 Modo Cliente (Tienda)
+      </button>
+      <button class="btn btn-sm px-3" 
+              [ngClass]="vistaActual === 'admin' ? 'btn-danger fw-bold' : 'btn-outline-light'"
+              (click)="vistaActual = 'admin'">
+        ⚙️ Modo Admin (Inventario)
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  
+  <div class="row align-items-center mb-4 pb-2 border-bottom">
+    <div class="col-md-8">
+      <h3 class="fw-bold text-dark mb-0">
+        {{ vistaActual === 'cliente' ? '🛒 Catálogo de Sementales y Pollones' : '⚙️ Panel de Control de Inventarios (MySQL)' }}
+      </h3>
+      <p class="text-muted small">
+        {{ vistaActual === 'cliente' ? 'Selecciona tus ejemplares favoritos y genera tu cotización de compra.' : 'Alta, edición, bajas de aves y actualización de fotografías físicas.' }}
+      </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+      @if (vistaActual === 'admin') {
+        <button class="btn btn-primary fw-bold shadow-sm px-4" (click)="abrirModalNuevo()">
+          ➕ Registrar Nueva Ave
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="row">
+    
+    <div [ngClass]="vistaActual === 'cliente' ? 'col-lg-8 col-md-7' : 'col-12'">
+      <div class="row">
+        @for (gallo of listaGallos; track gallo.id) {
+          <div [ngClass]="vistaActual === 'cliente' ? 'col-lg-6 col-12 mb-4' : 'col-lg-4 col-md-6 mb-4'">
+            <div class="card h-100 shadow-sm card-gallo border-0">
+              
+              <img [src]="gallo.image_url ? urlBackend + gallo.image_url : 'https://placehold.co/400x300?text=Sin+Foto'" 
+                   class="card-img-top imagen-ave" 
+                   alt="Foto del gallo">
+              
+              <div class="card-body">
+                <h5 class="card-title fw-bold text-success">{{ gallo.name }}</h5>
+                <p class="card-text small text-muted mb-2">
+                    <strong>Línea:</strong> {{ obtenerNombreCategoria(gallo.category_id) }} <br>
+                    <strong>Criadero:</strong> {{ obtenerNombreProveedor(gallo.supplier_id) }} <br>
+                    <strong>Edad:</strong> {{ gallo.age_months }} meses
+                </p>
+                <p class="card-text">{{ gallo.description }}</p>
+                <h6 class="fw-bold">Precio: ${{ gallo.unit_price }}</h6>
+                <p class="small" [ngClass]="gallo.units_in_stock > 0 ? 'text-success' : 'text-danger'">
+                    Stock: {{ gallo.units_in_stock }} en corrales
+                </p>
+              </div>
+
+              <div class="mt-auto pt-2">
+                @if (vistaActual === 'cliente') {
+                  <button class="btn btn-success w-100 fw-bold shadow-sm btn-sm py-2" 
+                          [disabled]="gallo.units_in_stock <= 0"
+                          (click)="agregarAlCarrito(gallo)">
+                    {{ gallo.units_in_stock > 0 ? '🛒 Añadir al Pedido' : 'Agotado' }}
+                  </button>
+                } @else {
+                  <div class="d-flex justify-content-between gap-2">
+                    <button class="btn btn-outline-primary btn-sm flex-grow-1" (click)="abrirModalEditar(gallo)">Editar</button>
+                    <button class="btn btn-outline-danger btn-sm px-3" (click)="eliminarGallo(gallo.id)">Eliminar</button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (vistaActual === 'cliente') {
+      <div class="col-lg-4 col-md-5 mb-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 90px; border-radius: 16px;">
+          <div class="card-header bg-success text-white py-3" style="border-radius: 16px 16px 0 0;">
+            <h5 class="card-title mb-0 fw-bold">🧾 Detalle del Pedido</h5>
+          </div>
+          <div class="card-body p-4">
+            
+            @if (carrito.length === 0) {
+              <div class="text-center py-4 text-muted">
+                <p class="fs-4 mb-1">🛒</p>
+                <small>No has añadido aves a tu pedido todavía.</small>
+              </div>
+            } @else {
+              <div class="mb-3 overflow-auto" style="max-height: 200px;">
+                @for (item of carrito; track $index) {
+                  <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div style="max-width: 70%;">
+                      <h6 class="mb-0 fw-bold small text-truncate">{{ item.name }}</h6>
+                      <small class="text-muted">{{ item.quantity }} x ${{ item.unit_price | number:'1.2-2' }}</small>
+                    </div>
+                    <div class="text-end">
+                      <span class="fw-bold small d-block">${{ (item.unit_price * item.quantity) | number:'1.2-2' }}</span>
+                      <button class="btn p-0 text-danger btn-sm small" (click)="removerDelCarrito($index)">Quitar</button>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="fs-5 fw-bold d-flex justify-content-between text-dark border-top pt-2 mb-4">
+                <span>Total:</span>
+                <span class="text-success">${{ totalCarrito | number:'1.2-2' }} MXN</span>
+              </div>
+
+              <div class="bg-light p-3 rounded mb-3">
+                <h6 class="fw-bold text-secondary mb-2 small">Información de Facturación</h6>
+                <div class="mb-2">
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="nombreCliente" placeholder="Nombre completo del comprador">
+                </div>
+                <div>
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="ciudadEnvio" placeholder="Ciudad de Envío (Ej. Zamora)">
+                </div>
+              </div>
+
+              <button class="btn btn-success w-100 fw-bold py-2 shadow" (click)="finalizarCompra()">
+                🚀 Confirmar y Finalizar Venta
+              </button>
+            }
+
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  @if (mostrarModal && vistaActual === 'admin') {
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title fw-bold">{{ editando ? '📝 Editar Datos' : '➕ Registrar Nueva Ave' }}</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+          </div>
+          
+          <form>
+            <div class="modal-body p-4">
+              <div class="row g-3">
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Nombre del Gallo</label>
+                  <input type="text" class="form-control shadow-sm" [(ngModel)]="galloForm.name" name="name" required>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Edad (Meses)</label>
+                  <input type="number" class="form-control shadow-sm" [(ngModel)]="galloForm.age_months" name="age_months">
+                </div>
+
+                <form>
+  <div class="modal-body p-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Línea (Categoría)</label>
+        <div class="input-group shadow-sm">
+          <select class="form-select" [(ngModel)]="galloForm.category_id" name="category_id" required>
+            <option [ngValue]="null" disabled>Selecciona...</option>
+            @for (cat of listaCategorias; track cat.id) {
+              <option [ngValue]="cat.id">
+                {{ cat.category_name || cat.name || cat.CategoryName || 'Línea ' + cat.id }}
+              </option>
+            }
+          </select>
+          <button class="btn btn-outline-success" type="button" (click)="crearNuevaLinea()">➕</button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Criadero (Proveedor)</label>
+        <div class="input-group shadow-sm">
+          <select class="form-select" [(ngModel)]="galloForm.supplier_id" name="supplier_id" required>
+            <option [ngValue]="null" disabled>Selecciona...</option>
+            @for (sup of listaProveedores; track sup.id) {
+              <option [ngValue]="sup.id">
+                {{ sup.company_name || sup.name || sup.CompanyName || 'Criadero ' + sup.id }}
+              </option>
+            }
+          </select>
+          <button class="btn btn-outline-success" type="button" (click)="crearNuevoCriadero()">➕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer bg-light">
+    <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+    <button type="button" class="btn btn-success" (click)="guardarGallo()">Guardar</button>
+  </div>
+</form>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Precio</label>
+                  <input type="number" class="form-control shadow-sm" [(ngModel)]="galloForm.unit_price" name="unit_price" required>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Existencia (Stock)</label>
+                  <input type="number" class="form-control shadow-sm" [(ngModel)]="galloForm.units_in_stock" name="units_in_stock">
+                </div>
+                
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Características / Notas</label>
+                  <textarea class="form-control shadow-sm" [(ngModel)]="galloForm.description" name="description" rows="2"></textarea>
+                </div>
+                
+                <div class="col-12 border-top pt-3 mt-4">
+                  <label class="form-label fw-semibold text-primary">📸 Foto del Ejemplar</label>
+                  <input type="file" class="form-control shadow-sm" (change)="onFotoSeleccionada($event)" accept="image/*">
+                </div>
+
+              </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+              <button type="button" class="btn btn-secondary" (click)="cerrarModal()" [disabled]="cargando">Cancelar</button>
+              <button type="button" class="btn btn-success fw-bold" (click)="guardarGallo()" [disabled]="cargando">
+                {{ cargando ? 'Procesando...' : (editando ? 'Guardar Cambios' : 'Guardar Ejemplar') }}
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

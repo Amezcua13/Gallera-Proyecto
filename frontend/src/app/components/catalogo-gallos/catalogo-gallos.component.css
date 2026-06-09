@@ -1,0 +1,61 @@
+.titulo-gallera {
+  color: #111111;
+  font-weight: 800;
+  border-bottom: 3px solid #198754; /* Un verde más vivo a juego con el éxito de la gallera */
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.card-gallo {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-gallo:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08) !important;
+}
+
+/* --- AQUÍ ESTÁ EL TRUCO PARA TU EJEMPLAR --- */
+.imagen-ave {
+  height: 240px;          /* Le damos un poco más de altura fija */
+  object-fit: contain;    /* Muestra la foto COMPLETA sin recortar pluma ni patas */
+  background: #f8f9fa;    /* Fondo gris ultra claro para rellenar los lados con elegancia */
+  padding: 8px;           /* Separación para que la foto respire y no toque los bordes */
+  transition: transform 0.3s ease;
+}
+
+.card-gallo:hover .imagen-ave {
+  transform: scale(1.03); /* Ligero zoom elegante al pasar el mouse */
+}
+
+.navbar {
+  border-bottom: 3px solid #198754;
+}
+
+.sticky-top {
+  z-index: 100;
+}
+
+.card-gallo {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-gallo:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.08), 0 10px 10px rgba(0,0,0,0.05) !important;
+}
+
+.imagen-ave {
+  height: 240px;
+  object-fit: contain;
+  background: #f8f9fa;
+  padding: 8px;
+}
